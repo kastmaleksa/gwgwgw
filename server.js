@@ -39,3 +39,32 @@ function savePlan() {
         alert('Morate uneti i Trenera i Vreme!');
     }
 }
+async function fetchPlans() {
+    try {
+        const plans = await client.query(`
+            SELECT Plan {
+                trainer,
+                time,
+                day
+            }
+        `);
+
+        // Popuni planove u kalendaru
+        plans.forEach(plan => {
+            const plansDiv = document.getElementById(`plans-${plan.day}`);
+            const planElement = document.createElement('div');
+            planElement.classList.add('plan');
+            planElement.innerHTML = `
+                <div class="plan-header">Trener: ${plan.trainer}</div>
+                <div>Vreme: ${plan.time}</div>
+                <button class="delete-plan" onclick="deletePlan(this)">Obriši</button>
+            `;
+            plansDiv.appendChild(planElement);
+        });
+    } catch (error) {
+        console.error('Greška pri čitanju podataka iz baze:', error);
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    fetchPlans();  // Učitaj planove sa baze prilikom učitavanja stranice
+});

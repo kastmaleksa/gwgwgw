@@ -1,37 +1,17 @@
-async function savePlan() {
-    const trainerInput = document.getElementById('trainerInput').value.trim();
-    const timeInput = document.getElementById('timeInput').value.trim();
+import edgedb from 'edgedb';
 
-    if (trainerInput && timeInput && activeDay) {
-        const planData = {
-            trainer: trainerInput,
-            time: timeInput,
-            day: activeDay
-        };
+const client = edgedb.createClient();
 
-        try {
-            // Logovanje pre slanja
-            console.log("Slanje plana:", planData);
-
-            const response = await fetch('/.netlify/functions/savePlan', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(planData),
-            });
-
-            const result = await response.json();
-            if (response.ok) {
-                alert(result.message);
-                loadPlansFromServer(); // Učitavanje planova
-            } else {
-                alert("Greška pri snimanju plana:", result.error);
+async function savePlanToDatabase(trainer, time, day) {
+    try {
+        await client.query(`
+            INSERT Plan {
+                trainer: <str>${trainer},
+                time: <str>${time},
+                day: <int>${day}
             }
-        } catch (error) {
-            console.error("Greška pri slanju podataka:", error);
-        }
-    } else {
-        alert('Morate uneti i Trenera i Vreme!');
+        `);
+    } catch (error) {
+        console.error('Greška pri upisu u bazu:', error);
     }
 }
